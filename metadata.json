@@ -1,0 +1,5 @@
+{
+  "name": "SpendWise Expense Tracker",
+  "description": "A full-stack expense tracker with real-time updates and data visualization.",
+  "requestFramePermissions": []
+}
