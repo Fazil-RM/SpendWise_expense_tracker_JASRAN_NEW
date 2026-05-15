@@ -3,15 +3,21 @@ import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
 import { google } from "googleapis";
+import cors from "cors"; //  for frontend communication
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  
+  // EDIT: Render provides the PORT dynamically. Default to 3000 for local dev.
+  const PORT = process.env.PORT || 3000;
 
   app.use(express.json());
+
+  // EDIT: Added CORS to allow your Vercel frontend or local dev to hit this API
+  app.use(cors());
 
   // Google Sheets API Setup
   const auth = new google.auth.GoogleAuth({
@@ -36,7 +42,7 @@ async function startServer() {
     try {
       await sheets.spreadsheets.values.append({
         spreadsheetId,
-        range: "Sheet1!A:B", // Assumes Sheet1 exists and has 2 columns
+        range: "Sheet1!A:B", 
         valueInputOption: "USER_ENTERED",
         requestBody: {
           values: [[date, message]],
@@ -49,7 +55,7 @@ async function startServer() {
     }
   });
 
-  // Vite middleware for development
+  // Vite middleware for development vs production
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -57,14 +63,17 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    app.use(express.static(path.join(__dirname, "dist")));
+    // EDIT: Ensure paths correctly point to the 'dist' folder after build
+    const distPath = path.resolve(__dirname, "dist");
+    app.use(express.static(distPath));
     app.get("*", (req, res) => {
-      res.sendFile(path.join(__dirname, "dist", "index.html"));
+      res.sendFile(path.resolve(distPath, "index.html"));
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  // EDIT: Added "0.0.0.0" as the host. Render requires this to accept external traffic.
+  app.listen(Number(PORT), "0.0.0.0", () => {
+    console.log(`Server running on port ${PORT}`);
   });
 }
 
