@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx server.ts",
     "build": "vite build",
-    "build:server": "tsc server.ts --outDir dist_server --module esnext --target esnext --moduleResolution node",
+    "build:server": "tsc",
     "start": "node dist_server/server.js",
     "preview": "vite preview",
     "clean": "rm -rf dist",
